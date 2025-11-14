@@ -1,0 +1,70 @@
+import { Request, Response } from "express";
+import * as BookingService from "./booking.service";
+import asyncHandler from "express-async-handler";
+import { createResponse } from "../../common/helper/response.helper";
+
+/**
+ * @swagger
+ * /api/booking/{eventId}/book:
+ *   post:
+ *     summary: Book seats for an event
+ *     tags: [Booking]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the event to book seats for
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - seatIds
+ *             properties:
+ *               seatIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example:
+ *                   - A1
+ *                   - A2
+ *     responses:
+ *       201:
+ *         description: Seats booked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: "#/components/schemas/Booking"
+ *                 message:
+ *                   type: string
+ *                   example: "booking success .."
+ *       400:
+ *         description: Invalid seat IDs
+ *       401:
+ *         description: Unauthorized
+ */
+export const bookSeats = asyncHandler(async (req: Request, res: Response) => {
+  const { eventId } = req.params;
+  const { seatIds } = req.body;
+  const userId = req.user?._id;
+
+  if (!seatIds || !Array.isArray(seatIds)) {
+    return;
+  }
+
+  const booking = await BookingService.bookSeats(
+    eventId,
+    seatIds,
+    userId as string
+  );
+  res.send(createResponse(booking, "booking sucess .."));
+});

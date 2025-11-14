@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const event_controller_1 = require("./event.controller");
+const auth_middleware_1 = require("../../common/middleware/auth.middleware");
+const router = (0, express_1.Router)();
+router.get("/", event_controller_1.EventController.getAll);
+router.get("/:id", event_controller_1.EventController.getOne);
+router.post("/", auth_middleware_1.auth, event_controller_1.EventController.create);
+router.put("/:id", auth_middleware_1.auth, event_controller_1.EventController.update);
+router.post("/:eventId/seats", auth_middleware_1.auth, event_controller_1.EventController.addSeats);
+router.post("/:eventId/reserve", auth_middleware_1.auth, event_controller_1.EventController.reserveSeats);
+exports.default = router;
