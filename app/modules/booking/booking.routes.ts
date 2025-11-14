@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { bookSeats } from "./booking.controller";
+import * as bookingController from "./booking.controller"
 import { auth } from "../../common/middleware/auth.middleware";
 import { bookingLimiter } from "../../common/middleware/ratelimiter.middleware";
 
 const router = Router();
 
-router.post("/:eventId/book", auth, bookingLimiter, bookSeats);
+router.post("/:eventId/book", auth, bookingLimiter, bookingController.bookSeats);
+router.get("/" , auth , bookingController.fetchbooking)
 
 export default router;

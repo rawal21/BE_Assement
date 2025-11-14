@@ -68,3 +68,34 @@ export const bookSeats = asyncHandler(async (req: Request, res: Response) => {
   );
   res.send(createResponse(booking, "booking sucess .."));
 });
+
+/**
+ * @swagger
+ * /api/booking:
+ *   get:
+ *     summary: Fetch all booking records
+ *     tags: [Booking]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Fetch success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: "#/components/schemas/Booking"
+ *                 message:
+ *                   type: string
+ *                   example: "fetch success.."
+ *       401:
+ *         description: Unauthorized
+ */
+export const fetchbooking = asyncHandler( async (req : Request , res : Response)=>{
+    const result = await BookingService.fetchAllbooking();
+    res.send(createResponse(result , "fetch sucess.."))
+})

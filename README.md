@@ -36,7 +36,8 @@ Create a .env file in the root of the project and add your environment variables
 env
 Copy code
 PORT=3000
-MONGO_URI=mongodb://127.0.0.1:27017/be_assement
+MONGO_URL=mongodb://mongo:27017/Event-booking   // when you are using docker
+MONGO_URL=mongodb://localhost:27017/Event-booking  // when you are using local mechine
 JWT_SECRET=your_jwt_secret
 EMAIL_USER=your_email@example.com
 EMAIL_PASS=your_email_password
