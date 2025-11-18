@@ -16,4 +16,5 @@ export interface IEvent extends ISeat {
   startAt: Date;
   createdBy: Types.ObjectId;
   seats: ISeat[];
+  image? : {public_id : string , url : string };
 }

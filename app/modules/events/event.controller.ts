@@ -24,7 +24,7 @@ export const EventController = {
    */
   create: asyncHandler(async (req: Request, res: Response) => {
      const userId  = req.user?._id ;
-    const event = await EventService.createEvent(req.body , userId as string);
+    const event = await EventService.createEvent(req.body  , userId as string , req.file);
     res.send(createResponse(event, "event created sucess "));
   }), 
   /**

@@ -30,6 +30,11 @@ const eventSchema = new schema<IEvent>(
     },
 
     seats: [seatSchema],
+    image: {
+  public_id: { type: String, required: false },
+  url: { type: String, required: false }
+},
+
   },
   { timestamps: true }
 );

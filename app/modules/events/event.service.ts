@@ -1,5 +1,8 @@
 import { ISeat } from "./event.dto";
 import { Event } from "./event.schema";
+import cloudinary from "../../common/helper/cloundnaryConfig.helper";
+import fs from 'fs';
+
 
 interface AddSeatDto {
   seatId: string;
@@ -7,8 +10,27 @@ interface AddSeatDto {
 }
 
 export const EventService = {
-  createEvent: async (data: any , userId : string) => {
-    const event = await Event.create( {...data , createdBy : userId} ) ;
+  createEvent: async (data: any , userId : string , file? : Express.Multer.File) => {
+    let uploadResult = null ;
+
+    if(file)
+    {
+      uploadResult = await cloudinary.uploader.upload(file.path , {
+        folder : "events"
+      });
+    }
+
+    const event = await Event.create({
+      ...data,
+      createdBy: userId,
+      image: uploadResult
+        ? {
+            public_id: uploadResult.public_id,
+            url: uploadResult.secure_url,
+          }
+        : null,
+    });
+
     return event;
   },
 
