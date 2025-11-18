@@ -12,9 +12,11 @@ import errorHandler from "./app/common/middleware/error-handler.middleware";
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 import { swaggerOptions } from "./app/common/services/swegger.serive";
+import cloudinary from "./app/common/helper/cloundnaryConfig.helper";
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 loadingConfig();
+
 const port = Number(process.env.PORT) ?? 3000;
 const app: Express = express();
 

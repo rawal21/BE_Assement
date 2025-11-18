@@ -38,6 +38,13 @@ export const EventController = {
    *         description: Fetch success
    */
 
+
+  addImage : asyncHandler(async (req:Request , res:Response)=>{
+      const result = await EventService.addimage(req.params.id , req?.file)
+       console.log("what is the issue we are facing" , result)
+      res.send(createResponse(result , "image added sucess .."));
+  }),
+
   getAll: asyncHandler(async (req: Request, res: Response) => {
     const events = await EventService.getEvents();
     res.send(createResponse(events, "fetch sucess.."));

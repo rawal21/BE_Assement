@@ -36,7 +36,32 @@ const eventSchema = new schema<IEvent>(
 },
 
   },
-  { timestamps: true }
+  { timestamps: true 
+
+  }
 );
 
+
+// ⭐ Virtuals
+eventSchema.virtual("totalSeats").get(function () {
+  return this.seats.length;
+});
+
+eventSchema.virtual("availableSeats").get(function () {
+  return this.seats.filter((s) => s.status === "available").length;
+});
+
+eventSchema.virtual("reservedSeats").get(function () {
+  return this.seats.filter((s) => s.status === "reserved").length;
+});
+
+eventSchema.virtual("bookedSeats").get(function () {
+  return this.seats.filter((s) => s.status === "booked").length;
+});
+
+// ⭐ Enable virtuals in response JSON
+eventSchema.set("toJSON", { virtuals: true });
+eventSchema.set("toObject", { virtuals: true });
+
 export const Event = mongoose.model<IEvent>("Event", eventSchema);
+
