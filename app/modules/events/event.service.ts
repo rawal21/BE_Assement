@@ -6,6 +6,7 @@ import fs from "fs";
 interface AddSeatDto {
   seatId: string;
   price: number;
+  status : "available" | "reserved" | "booked"
 }
 
 export const EventService = {
@@ -96,7 +97,7 @@ export const EventService = {
       event.seats.push({
         seatId: seat.seatId,
         price: seat.price,
-        status: "available",
+        status: seat.status,
         reservedBy: null,
         reservedAt: null,
       });
