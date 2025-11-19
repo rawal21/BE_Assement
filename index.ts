@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response } from "express";
 import http from "http";
 import morgan from "morgan";
+import cors from  'cors'
 import { loadingConfig } from "./app/common/helper/config.helper";
 import { initDb } from "./app/common/services/database.service";
 import routes from "./app/routes";
@@ -32,6 +33,11 @@ declare global {
 // middlewares
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(cors({
+  origin: ["http://localhost:3000"],
+  credentials: true,
+}));
+
 
 // Swagger route
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
