@@ -5,109 +5,62 @@ import { sendEmail } from "../../utils/email";
 import { ticketConfirmationTemplate } from "../../utils/emailTemplates";
 import { User } from "../auth/auth.schema";
 
-export const bookSeats = async (
+export const finalizeBooking = async (
   eventId: string,
   seatIds: string[],
-  userId: string
+  userId: string,
+  amount: number
 ) => {
-  const event = await Event.findById(eventId)
+  const event = await Event.findById(eventId);
   if (!event) throw new Error("Event not found");
 
-  let totalAmount = 0;
-  const now = new Date();
-
-  // VALIDATE + auto-reserve seats
-  for (const seatId of seatIds) {
-    const seat = event.seats.find((s) => s.seatId === seatId);
-    if (!seat) throw new Error(`Seat ${seatId} not found`);
-
-    if (seat.status === "booked") {
-      throw new Error(`Seat ${seatId} is already booked`);
-    }
-
-    if (seat.status === "reserved" && seat.reservedBy !== userId) {
-      throw new Error(`Seat ${seatId} is reserved by another user`);
-    }
-
-    if (seat.status === "available") {
-      seat.status = "reserved";
-      seat.reservedBy = userId;
-      seat.reservedAt = new Date();
-    }
-
-    if (seat.status === "reserved" && seat.reservedBy === userId) {
-      const diff = now.getTime() - seat.reservedAt!.getTime();
-      if (diff > 10 * 60 * 1000) {
-        seat.reservedAt = new Date();
-      }
-    }
-
-    totalAmount += seat.price;
-  }
-
-  // FETCH USER
-  const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
-
-  // VALIDATE WALLET
-  if (user.wallet < totalAmount) {
-    throw new Error(
-      `Insufficient wallet balance. Required: ${totalAmount}, Available: ${user.wallet}`
-    );
-  }
-
-  // DEDUCT MONEY
-  user.wallet -= totalAmount;
-  await user.save();
-
-  // FINAL BOOKING PROCESS
+  // Mark seats as booked
   seatIds.forEach((seatId) => {
-    const seat = event.seats.find((s) => s.seatId === seatId)!;
-    seat.status = "booked";
-    seat.reservedAt = null;
-    seat.reservedBy = null;
+    const seat = event.seats.find((s) => s.seatId === seatId);
+    if (seat) {
+      seat.status = "booked";
+      seat.reservedBy = null;
+      seat.reservedAt = null;
+    }
   });
 
   event.markModified("seats");
   await event.save();
 
-  // CREATE BOOKING
+  // Create booking record
   const booking = await Booking.create({
     userId,
     eventId,
     seats: seatIds,
-    amount: totalAmount,
+    amount
   });
 
-  // GENERATE QR (BUFFER FOR EMAIL)
   const qrBuffer = await QRCode.toBuffer(booking._id.toString());
-
-  // SAVE BASE64 IN DB (optional)
   booking.qrCode = qrBuffer.toString("base64");
   await booking.save();
 
-  // EMAIL HTML (CID BASED)
-  const emailHTML = ticketConfirmationTemplate(
+  // Email
+  const user = await User.findById(userId);
+  const html = ticketConfirmationTemplate(
     user.name,
     event.title,
     seatIds
   );
 
-  // SEND EMAIL WITH ATTACHMENT
   await sendEmail(
     user.email,
     `Your Ticket for ${event.title}`,
-    emailHTML,
+    html,
     [
       {
-        filename: "ticket-qr.png" ,
+        filename: "ticket-qr.png",
         content: qrBuffer,
-        cid: "qrCodeImage", // MUST MATCH template
+        cid: "qrCodeImage",
       },
     ]
   );
 
-  return booking ;
+  return booking;
 };
 
 export const fetchAllbooking = async (id : string)=>{
