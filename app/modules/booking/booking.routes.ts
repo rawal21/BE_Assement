@@ -7,5 +7,6 @@ const router = Router();
 
 router.post("/:eventId/book", auth, bookingController.bookSeats);
 router.get("/" , auth , bookingController.fetchbooking)
+router.get("/:id" , bookingController.fetchSingleBooking);
 
 export default router;

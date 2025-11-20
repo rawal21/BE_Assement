@@ -97,4 +97,11 @@ export const AuthController = {
     const result = await AuthService.login(email, password);
     res.send(createResponse(result, "Login success..."));
   }),
+
+  fetchUser : asyncHandler(async (req : Request , res:Response)=>{
+    const id = req.params.id;
+    const result = await AuthService.fetchUser(id);
+    console.log("fetching the user" , result);
+    res.send(createResponse(result , "fetch success!"))
+  })
 };

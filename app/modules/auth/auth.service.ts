@@ -37,4 +37,8 @@ export const AuthService = {
 
     return { token, user };
   },
+ fetchUser : async(id : string )=>{
+    return await User.findById(id);
+  }
 };
+

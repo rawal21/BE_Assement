@@ -107,9 +107,15 @@ export const bookSeats = async (
     ]
   );
 
-  return booking;
+  return booking ;
 };
 
-export const fetchAllbooking = async ()=>{
-    return  await Booking.find();
+export const fetchAllbooking = async (id : string)=>{
+    return  await Booking.find({userId : id})
+  
+}
+
+export const fetchSingleBooking = async (id : string)=>{
+  return await Booking.findById(id)
+
 }

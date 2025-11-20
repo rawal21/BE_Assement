@@ -100,6 +100,12 @@ console.log("seats" , selectedSeats)
  *         description: Unauthorized
  */
 export const fetchbooking = asyncHandler( async (req : Request , res : Response)=>{
-    const result = await BookingService.fetchAllbooking();
+    const id = req.user?._id as string;
+    const result = await BookingService.fetchAllbooking(id);
     res.send(createResponse(result , "fetch sucess.."))
+})
+
+export const fetchSingleBooking = asyncHandler(async (req :Request , res : Response)=>{
+   const result = await BookingService.fetchSingleBooking(req.params.id)
+   res.send((createResponse(result , "Single fetch success...")))
 })
