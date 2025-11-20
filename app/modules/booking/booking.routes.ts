@@ -5,7 +5,7 @@ import { bookingLimiter } from "../../common/middleware/ratelimiter.middleware";
 
 const router = Router();
 
-router.post("/:eventId/book", auth, bookingLimiter, bookingController.bookSeats);
+router.post("/:eventId/book", auth, bookingController.bookSeats);
 router.get("/" , auth , bookingController.fetchbooking)
 
 export default router;

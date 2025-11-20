@@ -54,16 +54,20 @@ import { createResponse } from "../../common/helper/response.helper";
  */
 export const bookSeats = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
-  const { seatIds } = req.body;
+  const { selectedSeats } = req.body;
   const userId = req.user?._id;
 
-  if (!seatIds || !Array.isArray(seatIds)) {
+  console.log("the bebuggin in backend" , eventId)
+  console.log("userId" , userId);
+console.log("seats" , selectedSeats)
+
+  if (!selectedSeats|| !Array.isArray(selectedSeats)) {
     return;
   }
 
   const booking = await BookingService.bookSeats(
     eventId,
-    seatIds,
+    selectedSeats,
     userId as string
   );
   res.send(createResponse(booking, "booking sucess .."));

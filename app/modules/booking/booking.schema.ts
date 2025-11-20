@@ -16,7 +16,7 @@ const bookingSchema = new schema(
     seats: [
       { type: String, required: true }, // seatIds only
     ],
-    amount: { type: Number, required: true },
+    amount: { type: Number, required: true  },
     qrCode: { type: String },
     status: {
       type: String,

@@ -10,7 +10,7 @@ const userSchema = new schema<IUser>(
     password: { type: String, required: true },
     phone: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    wallet : {type : Number, default : 0}
+    wallet : {type : Number, default : 5000}
   },
   { timestamps: true }
 );
