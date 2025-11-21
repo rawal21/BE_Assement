@@ -41,14 +41,17 @@ export const finalizeBooking = async (
 
   // Email
   const user = await User.findById(userId);
+  if(!user) return ;
+  console.log("user in email verification" , user);
   const html = ticketConfirmationTemplate(
+  
     user.name,
     event.title,
     seatIds
   );
 
   await sendEmail(
-    user.email,
+    user.email  ,
     `Your Ticket for ${event.title}`,
     html,
     [
