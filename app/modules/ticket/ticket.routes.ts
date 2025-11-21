@@ -4,6 +4,6 @@ import { auth } from "../../common/middleware/auth.middleware";
 
 const router = Router();
 
-router.post("/validate", auth , validateTicket);
+router.get("/validate/:id" , validateTicket);
 
 export default router;

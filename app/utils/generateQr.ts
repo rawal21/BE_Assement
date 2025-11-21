@@ -1,6 +1,5 @@
 import QRCode from "qrcode";
 
-export const generateTicketQR = async (ticketId: string) => {
-  const qr = await QRCode.toDataURL(ticketId);
-  return qr;
+export const generateVerificationQR = async (url: string) => {
+  return QRCode.toBuffer(url);
 };

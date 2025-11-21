@@ -1,5 +1,5 @@
 export const ticketConfirmationTemplate = (
-  userName: string,
+  userName: string | null,
   eventTitle: string,
   seatIds: string[]
 ) => {

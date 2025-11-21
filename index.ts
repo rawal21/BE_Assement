@@ -56,7 +56,7 @@ const initApp = async () => {
   app.use(errorHandler);
 
   // Start server
-  http.createServer(app).listen(port, () => {
+  http.createServer(app).listen(port, "0.0.0.0" , () => {
     console.log(`Server is running at port ${port}`);
     console.log(`Swagger docs available at http://localhost:${port}/api-docs`);
   });
