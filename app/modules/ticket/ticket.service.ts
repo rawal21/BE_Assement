@@ -26,5 +26,6 @@ export const validateTicket = async (bookingId: string, eventId: string) => {
     message: "Ticket is valid",
     booking,
     event,
+    valid : true 
   };
 };

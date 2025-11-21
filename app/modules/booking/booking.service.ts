@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import { sendEmail } from "../../utils/email";
 import { ticketConfirmationTemplate } from "../../utils/emailTemplates";
 import { User } from "../auth/auth.schema";
+import { generateVerificationQR } from "../../utils/generateQr";
 
 export const finalizeBooking = async (
   eventId: string,
@@ -35,9 +36,11 @@ export const finalizeBooking = async (
     amount
   });
 
-  const qrBuffer = await QRCode.toBuffer(booking._id.toString());
-  booking.qrCode = qrBuffer.toString("base64");
-  await booking.save();
+const verificationUrl = `http://192.168.1.110:3000/api/ticket/validate/${booking._id}`;
+const qrBuffer = await generateVerificationQR(verificationUrl);
+
+booking.qrCode = qrBuffer.toString("base64");
+await booking.save();
 
   // Email
   const user = await User.findById(userId);
