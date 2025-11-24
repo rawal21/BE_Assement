@@ -52,27 +52,27 @@ import { createResponse } from "../../common/helper/response.helper";
  *       401:
  *         description: Unauthorized
  */
-export const bookSeats = asyncHandler(async (req: Request, res: Response) => {
-  const { eventId } = req.params;
-  const { selectedSeats , total } = req.body;
-  const userId = req.user?._id;
+// export const bookSeats = asyncHandler(async (req: Request, res: Response) => {
+//   const { eventId } = req.params;
+//   const { selectedSeats , total } = req.body;
+//   const userId = req.user?._id;
 
-  console.log("the bebuggin in backend" , eventId)
-  console.log("userId" , userId);
-console.log("seats" , selectedSeats)
+//   console.log("the bebuggin in backend" , eventId)
+//   console.log("userId" , userId);
+// console.log("seats" , selectedSeats)
 
-  if (!selectedSeats|| !Array.isArray(selectedSeats)) {
-    return;
-  }
+//   if (!selectedSeats|| !Array.isArray(selectedSeats)) {
+//     return;
+//   }
 
-  const booking = await BookingService.finalizeBooking(
-    eventId,
-    selectedSeats,
-    userId as string,
-    total
-  );
-  res.send(createResponse(booking, "booking sucess .."));
-});
+//   const booking = await BookingService.finalizeBooking(
+//     eventId,
+//     selectedSeats,
+//     userId as string,
+//     total 
+//   );
+//   res.send(createResponse(booking, "booking sucess .."));
+// });
 
 /**
  * @swagger
@@ -103,6 +103,7 @@ console.log("seats" , selectedSeats)
 export const fetchbooking = asyncHandler( async (req : Request , res : Response)=>{
     const id = req.user?._id as string;
     const result = await BookingService.fetchAllbooking(id);
+    console.log("booking fetch " ,  result);
     res.send(createResponse(result , "fetch sucess.."))
 })
 

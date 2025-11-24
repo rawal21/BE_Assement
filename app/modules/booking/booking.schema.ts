@@ -8,21 +8,35 @@ const bookingSchema = new schema(
       ref: "User",
       required: true,
     },
+
     eventId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Event",
       required: true,
     },
-    seats: [
-      { type: String, required: true }, // seatIds only
-    ],
-    amount: { type: Number, required: true  },
+
+    seats: [{ type: String, required: true }],
+
+    amount: { type: Number, required: true },
+
     qrCode: { type: String },
+
     status: {
       type: String,
       enum: ["booked", "used"],
       default: "booked",
     },
+
+    // ⭐ Payment Fields
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+
+    stripeSessionId: { type: String },
+
+
   },
   { timestamps: true }
 );

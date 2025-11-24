@@ -7,10 +7,9 @@ import { User } from "../auth/auth.schema";
 import { generateVerificationQR } from "../../utils/generateQr";
 
 export const finalizeBooking = async (
-  eventId: string,
-  seatIds: string[],
-  userId: string,
-  amount: number
+
+eventId: string, seatIds: string[], amount: number,  paymentStatus: string,  stripeSessionId: string , userId : string
+
 ) => {
   const event = await Event.findById(eventId);
   if (!event) throw new Error("Event not found");
@@ -33,10 +32,12 @@ export const finalizeBooking = async (
     userId,
     eventId,
     seats: seatIds,
-    amount
+    amount ,
+    paymentStatus ,
+    stripeSessionId
   });
 
-const verificationUrl = `http://192.168.1.110:3000/api/ticket/validate/${booking._id}`;
+const verificationUrl = `http://192.168.1.110:8080/api/ticket/validate/${booking._id}`;
 const qrBuffer = await generateVerificationQR(verificationUrl);
 
 booking.qrCode = qrBuffer.toString("base64");

@@ -15,6 +15,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import { swaggerOptions } from "./app/common/services/swegger.serive";
 import cloudinary from "./app/common/helper/cloundnaryConfig.helper";
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
+import { stripeWebhookHandler } from "./app/modules/stripe/stripe.controller";
 
 loadingConfig();
 
@@ -30,11 +31,18 @@ declare global {
   }
 }
 
+app.post(
+  "/api/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookHandler
+);
+
+
 // middlewares
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors({
-  origin: ["http://localhost:3002"],
+  origin: ["http://localhost:3000"],
   credentials: true,
 }));
 
