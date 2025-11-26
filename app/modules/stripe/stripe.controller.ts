@@ -10,6 +10,7 @@ import createHttpError from "http-errors"
 
 export const createCheckoutSession = asyncHandler(
   async (req: Request, res: Response) => {
+    console.log("requests bodys for session " , req.body);
     const result = await stripeService.createSeesstion(req.body);
     console.log("-------- backend res for payment" , result);
     res.send(createResponse(result, "payment sucesss."));
@@ -25,7 +26,7 @@ export const fetchStripeSession = asyncHandler(
 );
 
 
-export const stripeWebhookHandler = async (req: Request, res: Response) => {
+export const stripeWebhookHandler = asyncHandler(async (req: Request, res: Response) => {
   let event;
 
   try {
@@ -35,56 +36,72 @@ export const stripeWebhookHandler = async (req: Request, res: Response) => {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-  } catch (err) {
-    console.error("❌ Webhook signature error", err);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (error: any) {
+    console.error("❌ Stripe Signature Verification Failed:", error.message);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
   }
 
+  // 👉 STEP 1: CHECK EVENT TYPE
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
+    const session: any = event.data.object;
 
-    if(!session) throw createHttpError(400 , "session not found...")
-    if(!session.metadata) throw createHttpError(400 , "session.meta not found..")
+    console.log("⭐ Stripe Session Received:", session.id);
 
-    // pull metadata values
+    if (!session?.metadata) {
+      console.error("❌ Metadata missing from session");
+      return res.status(400).json({ message: "Metadata missing" });
+    }
+
+    // 👉 STEP 2: Extract Metadata
     const eventId = session.metadata.eventId;
-    const seatIds = JSON.parse(session.metadata.seatIds);
+    const seatIds = JSON.parse(session.metadata.seatIds); // array of seat ids
     const userId = session.metadata.userId;
-
-    // Stripe sends amount in cents (paise)
     const amount = session.amount_total / 100;
 
+    console.log("📌 Metadata:", { eventId, seatIds, userId });
     console.log("🎉 Payment successful for session:", session.id);
 
-    // 1️⃣ Mark seats booked
-    await EventService.updateEvent(
-      { _id: eventId },
-      {
-        $set: {
-          "seats.$[elem].status": "booked",
-          "seats.$[elem].reservedBy": null,
-          "seats.$[elem].reservedAt": null,
+    // 👉 STEP 3: Update Seats (with arrayFilters)
+    try {
+      const updatedEvent = await EventService.updateEvent(
+        { _id: eventId },
+        {
+          $set: {
+            "seats.$[elem].status": "booked",
+            "seats.$[elem].reservedBy": userId,
+            "seats.$[elem].reservedAt": Date.now(),
+          },
         },
-      },
-      {
-        arrayFilters: [{ "elem.seatId": { $in: seatIds } }],
-      }
-    );
+        {
+          arrayFilters: [{ "elem._id": { $in: seatIds } }],
+          new: true,
+        }
+      );
 
-    // 2️⃣ Create booking properly
-   const res =   await bookingService.finalizeBooking(
-      eventId,
-      seatIds,
-      amount,
-      "paid",
-      session.id ,
-      userId 
-    );
+      console.log("✅ Seats Updated Successfully:", updatedEvent);
+    } catch (err) {
+      console.error("❌ Seat update failed:", err);
+    }
 
-    console.log("✔ Booking finalized successfully.");
-    console.log("checking the boooking status .." , res);
+    // 👉 STEP 4: Finalize Booking (RENAMED — no conflict with res)
+    try {
+      const booking = await bookingService.finalizeBooking(
+        eventId,
+        seatIds,
+        amount,
+        "paid",
+        session.id,
+        userId
+      );
+
+      console.log("✔ Booking finalized successfully.");
+      console.log("📘 Booking:", booking);
+    } catch (err) {
+      console.error("❌ Booking creation failed:", err);
+    }
   }
 
+  // 👉 MUST RESPOND TO STRIPE QUICKLY
+  return res.json({ received: true });
+});
 
-  res.json({ received: true });
-};

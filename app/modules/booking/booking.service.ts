@@ -36,12 +36,15 @@ eventId: string, seatIds: string[], amount: number,  paymentStatus: string,  str
     paymentStatus ,
     stripeSessionId
   });
-
+  
+  console.log("testing the booking serivce how it will handle the seens" , booking)
 const verificationUrl = `http://192.168.1.110:8080/api/ticket/validate/${booking._id}`;
 const qrBuffer = await generateVerificationQR(verificationUrl);
 
 booking.qrCode = qrBuffer.toString("base64");
 await booking.save();
+
+console.log("booking is hitting after the payment success.." , booking);
 
   // Email
   const user = await User.findById(userId);
@@ -71,8 +74,11 @@ await booking.save();
 };
 
 export const fetchAllbooking = async (id : string)=>{
-    return  await Booking.find({userId : id})
+   
   
+   const res = await Booking.find({userId : id})
+   console.log("the res debbuging in service" , res);
+  return res;
 }
 
 export const fetchSingleBooking = async (id : string)=>{

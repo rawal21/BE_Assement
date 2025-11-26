@@ -103,5 +103,10 @@ export const AuthController = {
     const result = await AuthService.fetchUser(id);
     console.log("fetching the user" , result);
     res.send(createResponse(result , "fetch success!"))
+  }) ,
+
+  refreshToken : asyncHandler(async (req:Request , res:Response)=>{
+    const result = await AuthService.refreshToken(req.body);
+    res.send(createResponse(result , "refreshed the token."))
   })
 };

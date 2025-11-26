@@ -6,5 +6,6 @@ export interface IUser extends BaseSchema {
   password: string;
   phone?: string;
   role: "user" | "admin";
-  wallet : number
+  wallet : number ;
+  refreshToken : string 
 }

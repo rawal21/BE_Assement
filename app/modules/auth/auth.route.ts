@@ -7,6 +7,7 @@ const router = Router();
 
 router.post("/register", authValidation.registerValidation , catchError, AuthController.register);
 router.post("/login", authValidation.loginValidation , catchError , AuthController.login);
+router.post("/refresh" , AuthController.refreshToken);
 router.get('/:id' , AuthController.fetchUser);
 
 export default router;

@@ -103,7 +103,7 @@ import { createResponse } from "../../common/helper/response.helper";
 export const fetchbooking = asyncHandler( async (req : Request , res : Response)=>{
     const id = req.user?._id as string;
     const result = await BookingService.fetchAllbooking(id);
-    console.log("booking fetch " ,  result);
+    console.log("booking fetch for conflict issue .. " ,  result);
     res.send(createResponse(result , "fetch sucess.."))
 })
 
