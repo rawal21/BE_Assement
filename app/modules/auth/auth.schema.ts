@@ -11,7 +11,7 @@ const userSchema = new schema<IUser>(
     phone: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     wallet : {type : Number, default : 5000} ,
-    refreshToken : {type : String , required :  true}
+    refreshToken : {type : String , required :  false , default : ""}
   },
   { timestamps: true }
 );

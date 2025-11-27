@@ -16,7 +16,7 @@ eventId: string, seatIds: string[], amount: number,  paymentStatus: string,  str
 
   // Mark seats as booked
   seatIds.forEach((seatId) => {
-    const seat = event.seats.find((s) => s.seatId === seatId);
+    const seat = event.seatStatus.find((s) => s.seatNumber === seatId);
     if (seat) {
       seat.status = "booked";
       seat.reservedBy = null;

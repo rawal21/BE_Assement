@@ -12,7 +12,6 @@ router.get("/:id", EventController.getOne);
 router.post("/", upload.single('image') ,auth , EventController.create);
 router.patch("/:id" , upload.single("image") , auth , EventController.addImage);
 router.put("/:id",auth , EventController.update);
-router.post("/:eventId/seats", auth , EventController.addSeats)
 router.post("/:eventId/reserve" , auth ,  EventController.reserveSeats)
 
 export default router;

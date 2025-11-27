@@ -67,9 +67,9 @@ export const stripeWebhookHandler = asyncHandler(async (req: Request, res: Respo
         { _id: eventId },
         {
           $set: {
-            "seats.$[elem].status": "booked",
-            "seats.$[elem].reservedBy": userId,
-            "seats.$[elem].reservedAt": Date.now(),
+            "seatStatus.$[elem].status": "booked",
+            "seatStatus.$[elem].reservedBy": userId,
+            "seatStatus.$[elem].reservedAt": Date.now(),
           },
         },
         {

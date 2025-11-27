@@ -41,12 +41,14 @@ export const EventController = {
 
   addImage : asyncHandler(async (req:Request , res:Response)=>{
       const result = await EventService.addimage(req.params.id , req?.file)
+      if(!result) throw new Error("we are having the issue..")
        console.log("what is the issue we are facing" , result)
       res.send(createResponse(result , "image added sucess .."));
   }),
 
   getAll: asyncHandler(async (req: Request, res: Response) => {
     const events = await EventService.getEvents();
+    console.log("the event fatching in events " , events);
     res.send(createResponse(events, "fetch sucess.."));
   }),
 
@@ -104,59 +106,7 @@ export const EventController = {
     res.send(createResponse(event, "update sucess.."));
   }),
 
-  /**
-   * @swagger
-   * /api/event/{eventId}/seats:
-   *   post:
-   *     summary: Add seats to an event
-   *     tags: [Event]
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: path
-   *         name: eventId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Event ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - seats
-   *             properties:
-   *               seats:
-   *                 type: array
-   *                 items:
-   *                   $ref: "#/components/schemas/Seat"
-   *                 example:
-   *                   - seatId: A1
-   *                     price: 100
-   *                   - seatId: A2
-   *                     price: 120
-   *     responses:
-   *       200:
-   *         description: Seats added successfully
-   */
-
-   addSeats: asyncHandler(async (req: Request, res: Response) => {
-    const { eventId } = req.params;
-    const { seats } = req.body;
-
-    if (!seats || !Array.isArray(seats)) {
-      res.status(400).json({
-        success: false,
-        message: "Seats array is required",
-      });
-      return; // IMPORTANT
-    }
-    const data = await EventService.addSeatsEvent(eventId, seats);
-    res.send(createResponse(data, "added sucess.."));
-  }),
-
+  
   /**
    * @swagger
    * /api/event/{eventId}/reserve:
@@ -194,9 +144,9 @@ export const EventController = {
    */
   reserveSeats: asyncHandler(async (req: Request, res: Response) => {
     const { eventId } = req.params;
-    const { seatIds } = req.body;
+    const { seatIds ,userId } = req.body;
     
-    const userId = req.user?._id;
+    // const userId = req.user?._id;
 
     if (!seatIds || !Array.isArray(seatIds)) {
       res.status(400).json({
@@ -208,4 +158,5 @@ export const EventController = {
     const data = await EventService.reserveSeats(eventId, seatIds, userId as string);
     res.send(createResponse(data, "resvered done.."));
   }),
-};
+ 
+}
