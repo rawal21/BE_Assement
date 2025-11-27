@@ -24,22 +24,24 @@ export const AuthService = {
   },
 
   login: async (email: string, password: string) => {
-    const user = await User.findOne({ email });
-    if (!user) throw new Error("Invalid credentials");
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) throw new Error("Invalid credentials");
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new Error("Invalid credentials");
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) throw new Error("Invalid credentials");
 
+  const payload = { _id: user._id, role: user.role };
 
-    const paylaod = {_id : user._id , role : user.role}
+  const token = await jwtService.createAccessToken(payload);
+  const refreshToken = await jwtService.createRefreshToken(payload);
 
-    const token = await jwtService.createAccessToken(paylaod);
-    const refreshToken = await jwtService.createRefreshToken(paylaod)
-   await  jwtService.saveRefreshToken(user._id , refreshToken);
-    await user.save();
+  await jwtService.saveRefreshToken(user._id, refreshToken);
 
-    return { token, refreshToken, user };
-  },
+  const safeUser = await User.findById(user._id).select("-password");
+
+  return { token, refreshToken, user: safeUser };
+},
+
   fetchUser: async (id: string) => {
     return await User.findById(id);
   },

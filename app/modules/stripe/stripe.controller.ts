@@ -26,7 +26,7 @@ export const fetchStripeSession = asyncHandler(
 );
 
 
-export const stripeWebhookHandler = asyncHandler(async (req: Request, res: Response) => {
+export const stripeWebhookHandler = (async (req: Request, res: Response) => {
   let event;
 
   try {
@@ -38,7 +38,8 @@ export const stripeWebhookHandler = asyncHandler(async (req: Request, res: Respo
     );
   } catch (error: any) {
     console.error("❌ Stripe Signature Verification Failed:", error.message);
-    return res.status(400).send(`Webhook Error: ${error.message}`);
+    // return res.status(400).send(`Webhook Error: ${error.message}`);
+    throw createHttpError(400 , `webhook Error : ${error.message}`)
   }
 
   // 👉 STEP 1: CHECK EVENT TYPE
@@ -49,7 +50,8 @@ export const stripeWebhookHandler = asyncHandler(async (req: Request, res: Respo
 
     if (!session?.metadata) {
       console.error("❌ Metadata missing from session");
-      return res.status(400).json({ message: "Metadata missing" });
+      // return res.status(400).json({ message: "Metadata missing" });
+      throw createHttpError(400 , "metsData is missing..")
     }
 
     // 👉 STEP 2: Extract Metadata
@@ -101,7 +103,7 @@ export const stripeWebhookHandler = asyncHandler(async (req: Request, res: Respo
     }
   }
 
-  // 👉 MUST RESPOND TO STRIPE QUICKLY
-  return res.json({ received: true });
+  
+  return res.send(createResponse({received: true } , "suceess..."))
 });
 

@@ -84,7 +84,7 @@ export const EventService = {
     return event;
   },
 
-  updateEvent: async (id: string, data: any) => {
+  updateEvent: async (p0: { _id: any; }, p1: { $set: { "seatStatus.$[elem].status": string; "seatStatus.$[elem].reservedBy": any; "seatStatus.$[elem].reservedAt": number; }; }, p2: { arrayFilters: { "elem._id": { $in: any; }; }[]; new: boolean; }, id: string, data: any) => {
     const event = await Event.findByIdAndUpdate(id, data, { new: true });
     if (!event) throw new Error("Event not found");
     return event;
