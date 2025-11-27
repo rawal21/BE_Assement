@@ -1,20 +1,39 @@
+// Seat layout inside venue
 import { Types } from "mongoose";
+export interface IVenueSeat {
+  seatNumber: string;
+  category?: string;
+  basePrice: number;
+}
 
-
-export interface ISeat {
-  seatId: string;
+// Seat status for each event
+export interface IEventSeatStatus {
+  seatNumber: string;
   price: number;
   status: "available" | "reserved" | "booked";
   reservedBy: string | null;
   reservedAt: Date | null;
 }
 
-export interface IEvent extends ISeat {
+// Main Event Interface
+export interface IEvent {
   title: string;
   description: string;
-  venue: string;
+
+  venue: {
+    name: string;
+    address: string;
+    seats: IVenueSeat[];
+  };
+
+  seatStatus: IEventSeatStatus[];
+
   startAt: Date;
+
   createdBy: Types.ObjectId;
-  seats: ISeat[];
-  image? : {public_id : string , url : string };
+
+  image?: {
+    public_id: string;
+    url: string;
+  };
 }

@@ -1,4 +1,4 @@
-import { ISeat } from "./event.dto";
+import { IEvent} from "./event.dto";
 import { Event } from "./event.schema";
 import cloudinary from "../../common/helper/cloundnaryConfig.helper";
 import fs from "fs";
@@ -11,7 +11,7 @@ interface AddSeatDto {
 
 export const EventService = {
   createEvent: async (
-    data: any,
+    data: Omit<IEvent , "createdBy" | "image">,
     userId: string,
     file?: Express.Multer.File
   ) => {
@@ -89,48 +89,48 @@ export const EventService = {
     return event;
   },
 
-  addSeatsEvent: async (eventId: string, seats: AddSeatDto[]) => {
-    const event = await Event.findById(eventId);
-    if (!event) throw new Error("Event not found");
+  // addSeatsEvent: async (eventId: string, seats: AddSeatDto[]) => {
+  //   const event = await Event.findById(eventId);
+  //   if (!event) throw new Error("Event not found");
 
-    seats.forEach((seat) => {
-      event.seats.push({
-        seatId: seat.seatId,
-        price: seat.price,
-        status: seat.status,
-        reservedBy: null,
-        reservedAt: null,
-      });
-    });
+  //   seats.forEach((seat) => {
+  //     event.seats.push({
+  //       seatId: seat.seatId,
+  //       price: seat.price,
+  //       status: seat.status,
+  //       reservedBy: null,
+  //       reservedAt: null,
+  //     });
+  //   });
 
-    await event.save();
-    return event;
-  },
+  //   await event.save();
+  //   return event;
+  // },
 
-  reserveSeats: async (eventId: string, seatIds: string[], userId: string) => {
-    const event = await Event.findById(eventId);
-    if (!event) throw new Error("Event not found");
-    const now = new Date();
+  // reserveSeats: async (eventId: string, seatIds: string[], userId: string) => {
+  //   const event = await Event.findById(eventId);
+  //   if (!event) throw new Error("Event not found");
+  //   const now = new Date();
 
-    const reservedSeats: any[] = [];
+  //   const reservedSeats: any[] = [];
 
-    seatIds.forEach((seatId) => {
-      const seat = event.seats.find((s) => s.seatId === seatId);
+  //   seatIds.forEach((seatId) => {
+  //     const seat = event.seats.find((s) => s.seatId === seatId);
 
-      if (!seat) throw new Error(`Seat ${seatId} not found`);
+  //     if (!seat) throw new Error(`Seat ${seatId} not found`);
 
-      if (seat.status !== "available")
-        throw new Error(`Seat ${seatId} is already ${seat.status}`);
+  //     if (seat.status !== "available")
+  //       throw new Error(`Seat ${seatId} is already ${seat.status}`);
 
-      seat.status = "reserved";
-      seat.reservedBy = userId;
-      seat.reservedAt = now;
+  //     seat.status = "reserved";
+  //     seat.reservedBy = userId;
+  //     seat.reservedAt = now;
 
-      reservedSeats.push(seat); // ⬅ store only reserved seats
-    });
+  //     reservedSeats.push(seat); // ⬅ store only reserved seats
+  //   });
 
-    await event.save();
+  //   await event.save();
 
-    return reservedSeats; // ⬅ return only the selected reserved seats
-  },
+  //   return reservedSeats; // ⬅ return only the selected reserved seats
+  // },
 };
