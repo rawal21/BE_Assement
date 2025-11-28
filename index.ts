@@ -8,6 +8,7 @@ import routes from "./app/routes";
 import { IUser } from "./app/modules/auth/auth.dto";
 import "./app/crons/releaseReservedSeats.cron";
 import errorHandler from "./app/common/middleware/error-handler.middleware";
+import { setupSwagger } from "./app/common/config/swegger.config";
 
 // Swagger imports
 import swaggerUi from "swagger-ui-express";
@@ -47,7 +48,8 @@ app.use(cors({
 }));
 
 // Swagger route
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+setupSwagger(app)
+
 
 const initApp = async () => {
   await initDb();
