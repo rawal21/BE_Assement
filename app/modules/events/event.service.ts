@@ -84,13 +84,11 @@ export const EventService = {
     return event;
   },
 
-  updateEvent: async (p0: { _id: any; }, p1: { $set: { "seatStatus.$[elem].status": string; "seatStatus.$[elem].reservedBy": any; "seatStatus.$[elem].reservedAt": number; }; }, p2: { arrayFilters: { "elem._id": { $in: any; }; }[]; new: boolean; }, id: string, data: any) => {
+  updateEvent: async ( id: string, data: any) => {
     const event = await Event.findByIdAndUpdate(id, data, { new: true });
     if (!event) throw new Error("Event not found");
     return event;
   },
-
-
 
   reserveSeats: async (eventId: string, seatIds: string[], userId: string) => {
     const event = await Event.findById(eventId);
@@ -118,4 +116,31 @@ export const EventService = {
 
     return reservedSeats; // ⬅ return only the selected reserved seats
   },
+
+
+  updateSeatsFromWebhook: async (
+    eventId: string | any,
+    seatIds: string[],
+    userId: string
+  ) => {
+    const updatedEvent = await Event.findByIdAndUpdate(
+      eventId,
+      {
+        $set: {
+          "seatStatus.$[elem].status": "booked",
+          "seatStatus.$[elem].reservedBy": userId,
+          "seatStatus.$[elem].reservedAt": Date.now(),
+        },
+      },
+      {
+        arrayFilters: [{ "elem._id": { $in: seatIds } }],
+        new: true,
+      }
+    );
+
+    if (!updatedEvent) throw createHttpError(404, "Event not found");
+
+    return updatedEvent;
+  },
 };
+

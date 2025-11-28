@@ -1,0 +1,509 @@
+{
+"openapi": "3.0.3",
+"info": {
+"title": "Event Booking API",
+"version": "1.0.0",
+"description": "API for user auth, events, bookings and stripe payments. Base path is `/api`."
+},
+"servers": [
+{
+"url": "http://localhost:8080/api",
+"description": "Local server"
+}
+],
+"paths": {
+"/auth/register": {
+"post": {
+"tags": ["Auth"],
+"summary": "Register a new user",
+"requestBody": {
+"required": true,
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/RegisterRequest"
+},
+"example": {
+"name": "Dikshit Rawal",
+"email": "[dikshit@example.com](mailto:dikshit@example.com)",
+"password": "strongPassword123",
+"phone": "+919876543210"
+}
+}
+}
+},
+"responses": {
+"201": {
+"description": "User created",
+"content": {
+"application/json": {
+"schema": { "$ref": "#/components/schemas/UserResponse" }
+}
+}
+},
+"400": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+}
+},
+"/auth/login": {
+"post": {
+"tags": ["Auth"],
+"summary": "Login user",
+"requestBody": {
+"required": true,
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/LoginRequest"
+},
+"example": {
+"email": "[dikshit@example.com](mailto:dikshit@example.com)",
+"password": "strongPassword123"
+}
+}
+}
+},
+"responses": {
+"200": {
+"description": "Login successful, returns tokens",
+"content": {
+"application/json": {
+"schema": { "$ref": "#/components/schemas/AuthResponse" }
+}
+}
+},
+"401": { "description": "Invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+}
+},
+"/auth/refresh": {
+"post": {
+"tags": ["Auth"],
+"summary": "Refresh access token using refresh token",
+"requestBody": {
+"required": true,
+"content": {
+"application/json": {
+"schema": {
+"type": "object",
+"properties": { "refreshToken": { "type": "string" } },
+"required": ["refreshToken"]
+},
+"example": { "refreshToken": "eyJhbGciOi..." }
+}
+}
+},
+"responses": {
+"200": {
+"description": "New access token",
+"content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } } }
+},
+"401": { "description": "Invalid refresh token", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+}
+},
+"/auth/{id}": {
+"get": {
+"tags": ["Auth"],
+"summary": "Fetch user by id",
+"parameters": [
+{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+],
+"responses": {
+"200": { "description": "User fetched", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserResponse" } } } },
+"404": { "description": "User not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+}
+},
+"/event": {
+"get": {
+"tags": ["Events"],
+"summary": "Get all events",
+"parameters": [
+{ "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+{ "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+{ "name": "search", "in": "query", "schema": { "type": "string" } }
+],
+"responses": {
+"200": {
+"description": "List of events",
+"content": {
+"application/json": {
+"schema": {
+"type": "object",
+"properties": {
+"data": { "type": "array", "items": { "$ref": "#/components/schemas/Event" } },
+"page": { "type": "integer" },
+"limit": { "type": "integer" },
+"total": { "type": "integer" }
+}
+}
+}
+}
+}
+}
+},
+"post": {
+"tags": ["Events"],
+"summary": "Create an event (requires auth). Accepts multipart/form-data for image upload",
+"security": [{ "bearerAuth": [] }],
+"requestBody": {
+"required": true,
+"content": {
+"multipart/form-data": {
+"schema": {
+"type": "object",
+"properties": {
+"title": { "type": "string" },
+"description": { "type": "string" },
+"venue[name]": { "type": "string" },
+"venue[address]": { "type": "string" },
+"startAt": { "type": "string", "format": "date-time" },
+"image": { "type": "string", "format": "binary" }
+},
+"required": ["title", "description", "venue[name]", "venue[address]", "startAt"]
+}
+}
+}
+},
+"responses": {
+"201": { "description": "Event created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Event" } } } },
+"400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+"401": { "description": "Unauthorized" }
+}
+}
+},
+"/event/{id}": {
+"get": {
+"tags": ["Events"],
+"summary": "Get one event by id",
+"parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+"responses": {
+"200": { "description": "Event", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Event" } } } },
+"404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+},
+"put": {
+"tags": ["Events"],
+"summary": "Update event (requires auth)",
+"security": [{ "bearerAuth": [] }],
+"parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+"requestBody": {
+"required": true,
+"content": {
+"application/json": {
+"schema": { "$ref": "#/components/schemas/EventUpdateRequest" }
+}
+}
+},
+"responses": {
+"200": { "description": "Updated event", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Event" } } } },
+"401": { "description": "Unauthorized" },
+"404": { "description": "Not found" }
+}
+},
+"patch": {
+"tags": ["Events"],
+"summary": "Add/replace image for event (requires auth). multipart/form-data with 'image' field",
+"security": [{ "bearerAuth": [] }],
+"parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+"requestBody": {
+"required": true,
+"content": {
+"multipart/form-data": {
+"schema": {
+"type": "object",
+"properties": {
+"image": { "type": "string", "format": "binary" }
+},
+"required": ["image"]
+}
+}
+}
+},
+"responses": {
+"200": { "description": "Image added", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Event" } } } },
+"401": { "description": "Unauthorized" }
+}
+}
+},
+"/event/{eventId}/seats": {
+"post": {
+"tags": ["Events"],
+"summary": "Add seats layout to event (requires auth)",
+"security": [{ "bearerAuth": [] }],
+"parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "string" } }],
+"requestBody": {
+"required": true,
+"content": {
+"application/json": {
+"schema": {
+"type": "object",
+"properties": {
+"seats": {
+"type": "array",
+"items": { "$ref": "#/components/schemas/VenueSeat" }
+}
+},
+"required": ["seats"]
+},
+"example": {
+"seats": [
+{ "seatNumber": "A1", "category": "regular", "basePrice": 500 },
+{ "seatNumber": "A2", "category": "regular", "basePrice": 500 }
+]
+}
+}
+}
+},
+"responses": {
+"200": { "description": "Seats added", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Event" } } } },
+"401": { "description": "Unauthorized" }
+}
+}
+},
+"/event/{eventId}/reserve": {
+"post": {
+"tags": ["Events"],
+"summary": "Reserve seats for an event (requires auth)",
+"security": [{ "bearerAuth": [] }],
+"parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "string" } }],
+"requestBody": {
+"required": true,
+"content": {
+"application/json": {
+"schema": { "$ref": "#/components/schemas/ReserveSeatsRequest" },
+"example": { "seats": ["A1", "A2"] }
+}
+}
+},
+"responses": {
+"200": { "description": "Seats reserved (temporary)", "content": { "application/json": { "schema": { "type": "object", "properties": { "reserved": { "type": "array", "items": { "type": "string" } }, "expiresAt": { "type": "string", "format": "date-time" } } } } } },
+"400": { "description": "Cannot reserve", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+}
+},
+"/booking": {
+"get": {
+"tags": ["Booking"],
+"summary": "Fetch bookings for authenticated user",
+"security": [{ "bearerAuth": [] }],
+"responses": {
+"200": { "description": "Bookings list", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Booking" } } } } },
+"401": { "description": "Unauthorized" }
+}
+}
+},
+"/booking/{id}": {
+"get": {
+"tags": ["Booking"],
+"summary": "Fetch a single booking by ID",
+"parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+"responses": {
+"200": { "description": "Booking", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Booking" } } } },
+"404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+}
+},
+"/payment/create-payment-intent": {
+"post": {
+"tags": ["Payment"],
+"summary": "Create Stripe checkout session / payment intent",
+"requestBody": {
+"required": true,
+"content": {
+"application/json": {
+"schema": {
+"type": "object",
+"properties": {
+"eventId": { "type": "string" },
+"seats": { "type": "array", "items": { "type": "string" } },
+"amount": { "type": "number" }
+},
+"required": ["eventId", "seats", "amount"]
+},
+"example": {
+"eventId": "64a1f2b4c9a7...",
+"seats": ["A1", "A2"],
+"amount": 1000
+}
+}
+}
+},
+"responses": {
+"200": {
+"description": "Stripe session created",
+"content": { "application/json": { "schema": { "$ref": "#/components/schemas/StripeSessionResponse" } } }
+},
+"400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+}
+}
+},
+"/payment/session/{id}": {
+"get": {
+"tags": ["Payment"],
+"summary": "Fetch Stripe session by id",
+"parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+"responses": {
+"200": { "description": "Stripe session", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StripeSessionResponse" } } } },
+"404": { "description": "Not found" }
+}
+}
+}
+},
+"components": {
+"securitySchemes": {
+"bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+},
+"schemas": {
+"RegisterRequest": {
+"type": "object",
+"properties": {
+"name": { "type": "string" },
+"email": { "type": "string", "format": "email" },
+"password": { "type": "string" },
+"phone": { "type": "string" }
+},
+"required": ["name", "email", "password"]
+},
+"LoginRequest": {
+"type": "object",
+"properties": {
+"email": { "type": "string", "format": "email" },
+"password": { "type": "string" }
+},
+"required": ["email", "password"]
+},
+"AuthResponse": {
+"type": "object",
+"properties": {
+"user": { "$ref": "#/components/schemas/UserResponse" },
+"accessToken": { "type": "string" },
+"refreshToken": { "type": "string" }
+}
+},
+"TokenResponse": {
+"type": "object",
+"properties": {
+"accessToken": { "type": "string" }
+}
+},
+"UserResponse": {
+"type": "object",
+"properties": {
+"_id": { "type": "string" },
+"name": { "type": "string" },
+"email": { "type": "string", "format": "email" },
+"phone": { "type": "string" },
+"role": { "type": "string", "enum": ["user", "admin"] },
+"wallet": { "type": "number", "default": 5000 },
+"refreshToken": { "type": "string" },
+"createdAt": { "type": "string", "format": "date-time" },
+"updatedAt": { "type": "string", "format": "date-time" }
+}
+},
+"VenueSeat": {
+"type": "object",
+"properties": {
+"seatNumber": { "type": "string" },
+"category": { "type": "string", "default": "regular" },
+"basePrice": { "type": "number" }
+},
+"required": ["seatNumber", "basePrice"]
+},
+"EventSeatStatus": {
+"type": "object",
+"properties": {
+"seatNumber": { "type": "string" },
+"status": { "type": "string", "enum": ["available", "reserved", "booked"], "default": "available" },
+"price": { "type": "number" },
+"reservedBy": { "type": "string", "nullable": true },
+"reservedAt": { "type": "string", "format": "date-time", "nullable": true }
+}
+},
+"Venue": {
+"type": "object",
+"properties": {
+"name": { "type": "string" },
+"address": { "type": "string" },
+"seats": { "type": "array", "items": { "$ref": "#/components/schemas/VenueSeat" } }
+}
+},
+"Event": {
+"type": "object",
+"properties": {
+"_id": { "type": "string" },
+"title": { "type": "string" },
+"description": { "type": "string" },
+"venue": { "$ref": "#/components/schemas/Venue" },
+"seatStatus": { "type": "array", "items": { "$ref": "#/components/schemas/EventSeatStatus" } },
+"startAt": { "type": "string", "format": "date-time" },
+"createdBy": { "type": "string" },
+"image": {
+"type": "object",
+"properties": { "public_id": { "type": "string" }, "url": { "type": "string", "format": "uri" } }
+},
+"totalSeats": { "type": "integer" },
+"availableSeats": { "type": "integer" },
+"reservedSeats": { "type": "integer" },
+"bookedSeats": { "type": "integer" },
+"createdAt": { "type": "string", "format": "date-time" },
+"updatedAt": { "type": "string", "format": "date-time" }
+}
+},
+"EventUpdateRequest": {
+"type": "object",
+"properties": {
+"title": { "type": "string" },
+"description": { "type": "string" },
+"venue": { "$ref": "#/components/schemas/Venue" },
+"startAt": { "type": "string", "format": "date-time" }
+}
+},
+"ReserveSeatsRequest": {
+"type": "object",
+"properties": {
+"seats": { "type": "array", "items": { "type": "string" } }
+},
+"required": ["seats"]
+},
+"Booking": {
+"type": "object",
+"properties": {
+"_id": { "type": "string" },
+"userId": { "type": "string" },
+"eventId": { "type": "string" },
+"seats": { "type": "array", "items": { "type": "string" } },
+"amount": { "type": "number" },
+"qrCode": { "type": "string" },
+"status": { "type": "string", "enum": ["booked", "used"], "default": "booked" },
+"paymentStatus": { "type": "string", "enum": ["pending", "paid", "failed"], "default": "pending" },
+"stripeSessionId": { "type": "string" },
+"createdAt": { "type": "string", "format": "date-time" },
+"updatedAt": { "type": "string", "format": "date-time" }
+}
+},
+"StripeSessionResponse": {
+"type": "object",
+"properties": {
+"id": { "type": "string" },
+"url": { "type": "string", "format": "uri" },
+"status": { "type": "string" }
+}
+},
+"Error": {
+"type": "object",
+"properties": {
+"message": { "type": "string" },
+"details": { "type": "object" }
+}
+}
+}
+},
+"tags": [
+{ "name": "Auth", "description": "Authentication and user endpoints" },
+{ "name": "Events", "description": "Create, read and manage events" },
+{ "name": "Booking", "description": "User bookings" },
+{ "name": "Payment", "description": "Stripe payment endpoints" }
+]
+}
